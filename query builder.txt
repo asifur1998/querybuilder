@@ -1,0 +1,212 @@
+insert
+
+controller 
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use DB; 
+
+class FirstController extends Controller
+{
+	
+   // field validation 
+
+    public function store(Request $request)
+    {
+    	 $validated = $request->validate([
+        'text' => 'required|unique:books|max:500',
+        'date' => 'required',
+        // table books 
+    ]);
+       // dayan dump 
+   // dd($request ->all());
+
+          // migration then field 
+    $data=array(
+      'text'=>$request->text,
+      'date'=>$request->date,
+
+    );
+    // insert query 
+    DB:: table ('books')->insert($data);
+
+    // redirect 
+    return redirect()->back()->with('success','successfully inserted!');
+    }
+   
+
+}
+
+
+
+read
+
+
+
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use DB;
+
+class SecondController extends Controller
+{
+    public function view()
+    {
+    	$data = DB :: table('books')->get();
+    	//dd($data);
+    	return view ('layouts.note',compact('data'));
+    }
+}
+
+
+
+
+
+delete 
+
+
+
+
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use DB;
+
+class ThirdController extends Controller
+{
+    public function delete($id)
+    {
+    	DB::table('books')->where('id',$id)->delete();
+    	return redirect()->back()->with('delete','Data has been deleted!');
+    }
+
+}
+
+
+
+
+
+
+update
+
+
+
+
+
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use DB;
+
+class FourController extends Controller
+{
+    public function edit($id)
+    {
+    	$data = DB::table('books')->where('id',$id)->first();
+    	return view ('layouts.edit',compact('data'));
+    	//dd($id);
+    }
+    public function update(Request $request,$id)
+    {
+    	 $validated = $request->validate([
+         'text' => 'required|unique:books|max:255',
+         'date' => 'required',
+        // table books 
+      //  dd($request->input());
+]);
+      $data=array(
+      'text'=>$request->text,
+      'date'=>$request->date,
+
+    );
+    	   DB::table('books')->where('id',$id)->update($data);
+    	   return redirect()->back()->with('success','successfully Updated!');
+}
+
+}
+
+
+
+
+web.php
+
+
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\FirstController;
+use App\Http\Controllers\SecondController;
+use App\Http\Controllers\ThirdController;
+use App\Http\Controllers\FourController;
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('/note', function () {
+    return view('layouts.note');
+});
+
+Route::get('/insert', function () {
+    return view ('layouts.insert');
+});
+
+
+
+
+Route::post('/store/contact',[FirstController::class,'store'])->name('store.contact');
+Route::get('/view',[SecondController::class,'view'])->name('store.view');
+Route::get('/book/delete/{id}',[ThirdController::class,'delete'])->name('book.delete');
+Route::get('/book/edit/{id}',[FourController::class,'edit'])->name('book.edit');
+Route::post('/book/update/{id}',[FourController::class,'update'])->name('book.store');
+
+
+
+
+
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+require __DIR__.'/auth.php';
+
+
+
+
+
+
+notification 
+
+
+
+
+
+@if(session()->has('success'))
+<strong class="text-success">{{session()->get('success')}} </strong>
+@endif
+
